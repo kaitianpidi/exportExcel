@@ -1,0 +1,74 @@
+package com.compass.attendanceController;
+
+import com.alibaba.excel.ExcelWriter;
+import com.alibaba.excel.support.ExcelTypeEnum;
+import com.alibaba.excel.write.metadata.WriteSheet;
+import com.compass.attendanceService.ExportAttendanceService;
+import com.compass.model.WorkRecord;
+import com.compass.vo.AttendanceRecordExcel;
+import com.compass.vo.WorkHoursSumRecordExcel;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
+
+import javax.servlet.http.HttpServletResponse;
+import java.io.OutputStream;
+import java.util.List;
+
+/**
+ * @author: ly
+ * @date:2021/8/22 - 9:07
+ */
+@Controller
+@Slf4j
+public class ExportAttendanceController {
+    @Autowired
+    ExportAttendanceService exportAttendanceService;
+    @RequestMapping("exportAttendance")
+    @ResponseBody
+    public void exportWorkRecord(WorkRecord workRecord, HttpServletResponse response) {
+        OutputStream out = null;
+        ExcelWriter excelWriter = null;
+        String fileName = "test" + System.currentTimeMillis() + ".xlsx";
+        String sheetName = "考勤记录";
+        try {
+            out = response.getOutputStream();
+            //设置ConetentType CharacterEncoding Header,需要在excelWriter.write()之前设置
+            response.setContentType("mutipart/form-data");
+            response.setCharacterEncoding("utf-8");
+            response.setHeader("Content-disposition", "attachment;filename=" + fileName);
+
+            excelWriter = new ExcelWriter(out, ExcelTypeEnum.XLSX);
+
+            //1.定义WriteSheet
+            WriteSheet writeSheet = new WriteSheet();
+            writeSheet.setSheetName(sheetName);
+            writeSheet.setClazz(AttendanceRecordExcel.class);
+
+
+            // 根据用户传入字段 只导出要显示的字段
+   /*         Set<String> includeColumnFiledNames = new HashSet<String>();
+            includeColumnFiledNames.add("userName");
+            includeColumnFiledNames.add("restDate");
+            writeSheet.setIncludeColumnFiledNames(includeColumnFiledNames);*/
+
+            //2.获取数据
+            List<AttendanceRecordExcel> data = exportAttendanceService.getExportAttendanceList(workRecord);
+            //3. 执行write方法，下载
+            excelWriter.write(data, writeSheet);
+            excelWriter.finish();
+            out.flush();
+        } catch (Exception e) {
+            log.error("出现异常，{}", e.getMessage(), e);
+        } finally {
+            try {
+                out.close();
+            } catch (Exception e) {
+                log.error("出现异常，{}", e.getMessage(), e);
+            }
+        }
+    }
+}
