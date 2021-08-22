@@ -1,0 +1,42 @@
+package com.compass.vo;
+
+import com.alibaba.excel.annotation.ExcelProperty;
+import com.alibaba.excel.annotation.write.style.ColumnWidth;
+import com.alibaba.excel.annotation.write.style.ContentRowHeight;
+import com.alibaba.excel.annotation.write.style.HeadRowHeight;
+import lombok.Data;
+
+@Data
+@ContentRowHeight(15)
+@HeadRowHeight(20)
+@ColumnWidth(25)
+public class AttendanceRecordExcel {
+    @ExcelProperty("序号")
+    private int sn;
+    @ExcelProperty("姓名")
+    private String userName;
+
+    @ExcelProperty("工作日期")
+    private String workDate;
+
+    @ExcelProperty("上班卡")
+    private String upWorkTime;
+
+    @ExcelProperty("下班卡")
+    private String offWorkTime;
+
+    @ExcelProperty("上班时长")
+    private Double workHours;
+
+//    @ExcelProperty("本月累计总工时")
+//    private Double workHoursSum;
+
+    @ExcelProperty("备注")
+    @ColumnWidth(50)
+    private String upWorkMsg;
+
+    @ExcelProperty("总时长")
+    private Double workHoursSum;          //累计工作时长：按工作月份获取
+
+
+}
